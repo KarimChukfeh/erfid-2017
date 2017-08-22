@@ -86,13 +86,12 @@ trap('INT') {
 
 def main
   log("Staring up!")
-  config = read_config()
-  reader = get_reader()
   system "ifconfig | grep HW | awk '{print $5}' > mac"
   file = File.new("mac", "r")
   secret =  file.gets.to_s
-  puts(secret)
-
+  puts secret
+  config = read_config()
+  reader = get_reader()
 
   loop do
     begin
