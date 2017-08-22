@@ -10,6 +10,12 @@ require "pi_piper"
 NO_TAG = -90
 DISCONNECTED = -1
 
+def get_mac
+  system "ifconfig | grep HW | awk '{print $5}' > mac"
+  file = File.new("mac", "r")
+  return file.gets.to_s
+end
+
 def read_config
   JSON.parse(File.read(File.join(File.dirname(__FILE__),"./config.json")))
 end
@@ -85,29 +91,29 @@ trap('INT') {
 #######################################
 
 def main
+
   log("Staring up!")
-  system "ifconfig | grep HW | awk '{print $5}' > mac"
-  file = File.new("mac", "r")
-  secret =  file.gets.to_s
-  puts secret
+
+  secret =  get_mac()
   config = read_config()
   reader = get_reader()
 
   loop do
     begin
-      card = read_card(reader)
+      card = [read_card(reader), secret]
+      spaghetti = cart.to_json
 
       next unless card #failed to read card
 
-      log("Read card: #{card}")
+      log("Read card: #{spaghetti}")
 
-      response = send_card(card, config)
+      response = send_card(spaghetti, config)
 
       if response.success?
-        log("Successfully sent #{card}")
+        log("Successfully sent #{spaghetti}")
         display_success() #takes 1.5 seconds
       else
-        log("ERROR: got #{response.status} sending #{card}: #{response.body}")
+        log("ERROR: got #{response.status} sending #{spaghetti}: #{response.body}")
         display_error() #takes 1.5 seconds
       end
     rescue Faraday::ConnectionFailed
