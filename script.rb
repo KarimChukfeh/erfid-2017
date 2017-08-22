@@ -101,7 +101,7 @@ def main
   loop do
     begin
       card = [read_card(reader), secret]
-      spaghetti = cart.to_json.to_s
+      spaghetti = card.to_json.to_s
 
       next unless card #failed to read card
 
