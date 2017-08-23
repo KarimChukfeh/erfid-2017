@@ -1,6 +1,5 @@
 # ERFID: a rfid
 # Copyright (C) 2015 Wesley Ellis
-# Edited by Karim Chukfeh in 2017
 require 'json'
 require 'faraday'
 require 'nfc'
@@ -39,10 +38,10 @@ def read_card(reader)
   end
 end
 
-def send_card(card_number, config)
+def send_card(card_number, mac_address, config)
   Faraday.post(
     config["url"],
-    { rfid: card_number }
+    { rfid: card_number, mac_address: mac_address }
   )
 end
 
@@ -94,26 +93,25 @@ def main
 
   log("Staring up!")
 
-  secret =  get_mac()
   config = read_config()
   reader = get_reader()
+  mac_address =  get_mac()
 
   loop do
     begin
-      card = [read_card(reader), secret]
-      spaghetti = card.to_json.to_s
+      card = read_card(reader)
 
       next unless card #failed to read card
 
-      log("Read card: #{spaghetti}")
+      log("Read card: #{card}")
 
-      response = send_card(spaghetti, config)
+      response = send_card(card, mac_address, config)
 
       if response.success?
-        log("Successfully sent #{spaghetti}")
+        log("Successfully sent #{card}")
         display_success() #takes 1.5 seconds
       else
-        log("ERROR: got #{response.status} sending #{spaghetti}: #{response.body}")
+        log("ERROR: got #{response.status} sending #{card}: #{response.body}")
         display_error() #takes 1.5 seconds
       end
     rescue Faraday::ConnectionFailed
