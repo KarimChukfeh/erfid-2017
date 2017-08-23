@@ -10,9 +10,17 @@ NO_TAG = -90
 DISCONNECTED = -1
 
 def get_mac
-  system "ifconfig | grep HW | awk '{print $5}' > mac"
   file = File.new("mac", "r")
-  return file.gets.to_s
+  if address = file.gets.to_s
+    return address
+  else
+    system "ifconfig eth0 | grep HW | awk '{print $5}' > mac"
+    if address = file.gets.to_s
+      return address
+    else
+      return "unknown"
+    end
+  end
 end
 
 def read_config
